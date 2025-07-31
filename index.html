@@ -2,63 +2,89 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>تابلو زنده شما</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تابلو زنده شما (Live Photo Frame)</title>
+    <!-- A-Frame and MindAR libraries -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <style>
+        /* General body styling */
         body {
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #222;
         }
+        /* Utility class to hide elements */
         .hidden {
             display: none !important;
         }
+        /* Splash screen styling */
         #splash-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('./zima.jpg');
+            /* --- UPDATED to use your image from GitHub --- */
+            background-image: url('https://zimahandmade.github.io/live-photo-f/zima.JPG');
             background-size: cover;
             background-position: center center;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 3;
+            z-index: 10004;
+            text-align: center;
         }
         #start-container {
-            text-align: center;
             max-width: 90%;
+            /* Removed background color to show the image fully */
+            background-color: transparent;
+            padding: 20px;
+            border-radius: 15px;
+            /* --- ADDED MARGIN-TOP TO MOVE THE CONTAINER DOWN --- */
+            margin-top: 30vh; /* This pushes the container down by 30% of the viewport height */
         }
-        #start-container p {
-            font-size: 24px;
-            font-weight: bold;
-            line-height: 1.6;
-            color: #FFA500;
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
-            margin: 0 0 30px 0;
-            padding: 10px;
-        }
+        /* --- UPDATED BUTTON STYLE --- */
         #start-button {
-            padding: 15px 50px;
-            font-size: 20px;
+            padding: 12px 40px;
+            font-size: 18px;
             font-weight: bold;
-            color: white;
-            background: linear-gradient(45deg, #FF4500, #FF8C00);
-            border: none;
+            /* --- COLOR CHANGED AS REQUESTED --- */
+            color: #002744;
+            border: 2px solid #002744;
+            background-color: transparent;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            animation: glow-pulse 2s infinite;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.4s ease, box-shadow 0.4s ease, background-color 0.4s ease, color 0.4s ease;
+            animation: glow-pulse 2.5s infinite;
+            /* Removed margin-top as the container is now centered */
         }
+        /* --- UPDATED HOVER EFFECT --- */
+        #start-button:hover {
+            /* --- COLOR CHANGED AS REQUESTED --- */
+            background-color: #002744;
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+        /* --- GLOW-PULSE ANIMATION --- */
         @keyframes glow-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 5px rgba(0, 39, 68, 0);
+            }
+            50% {
+                transform: scale(1.05);
+                /* --- GLOW COLOR CHANGED AS REQUESTED --- */
+                box-shadow: 0 0 20px rgba(0, 39, 68, 0.7);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 5px rgba(0, 39, 68, 0);
+            }
         }
+        /* General UI container for buttons */
         #ui-container {
             position: fixed;
             top: 0;
@@ -68,37 +94,47 @@
             z-index: 10003;
             pointer-events: none;
         }
+        /* Button to toggle between AR and fullscreen video */
         #toggle-view-button {
             pointer-events: auto;
             position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 8px 12px;
-            font-size: 14px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 20px;
+            font-size: 16px;
             font-weight: bold;
             color: white;
-            background-color: rgba(0, 0, 0, 0.6);
-            border: none;
-            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 2px solid white;
+            border-radius: 25px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
+        #toggle-view-button:hover {
+            background-color: rgba(255, 165, 0, 0.8);
+        }
+        /* Fullscreen modal video player */
         #modal-player {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.9);
+            background-color: rgba(0,0,0,0.95);
             z-index: 10002;
             display: flex;
             justify-content: center;
             align-items: center;
         }
         #modal-player video {
-            width: 95%;
-            height: 95%;
+            width: 100%;
+            max-width: 1200px;
+            height: auto;
+            max-height: 100%;
             object-fit: contain;
         }
+        /* The main AR scene */
         #ar-scene {
             position: fixed;
             top: 0;
@@ -111,40 +147,48 @@
 </head>
 <body>
 
+    <!-- Splash screen shown on page load -->
     <div id="splash-screen">
         <div id="start-container">
-            <p>قاب عکستو جلو دوربین گوشی بگیر تا سوپرایزت کنم</p>
+            <!-- The instruction text has been removed -->
             <button id="start-button">بزن بریم</button>
         </div>
     </div>
     
+    <!-- Container for UI elements like buttons -->
     <div id="ui-container" class="hidden">
         <button id="toggle-view-button">پخش تمام صفحه</button>
     </div>
     
+    <!-- Modal for playing the video in fullscreen -->
     <div id="modal-player" class="hidden"></div>
     
-    <a-scene id="ar-scene" class="hidden" mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; filterMinCF: 0.001; filterBeta: 10;" vr-mode-ui="enabled: false" color-space="sRGB">
+    <!-- A-Frame Scene for AR -->
+    <!-- --- UPDATED to use your .mind file from GitHub --- -->
+    <a-scene 
+        id="ar-scene" 
+        class="hidden" 
+        mindar-image="imageTargetSrc: https://zimahandmade.github.io/live-photo-f/targets.mind; autoStart: false; filterMinCF: 0.001; filterBeta: 10;" 
+        vr-mode-ui="enabled: false" 
+        device-orientation-permission-ui="enabled: false"
+        color-space="sRGB"
+        renderer="logarithmicDepthBuffer: true;">
+
         <a-assets>
-            <video id="ar-video" src="./video.mp4" loop playsinline webkit-playsinline></video>
+            <!-- --- UPDATED to use your video file from GitHub --- -->
+            <video id="ar-video" src="https://zimahandmade.github.io/live-photo-f/video.mp4" loop playsinline webkit-playsinline crossorigin="anonymous"></video>
         </a-assets>
+
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        
         <a-entity id="target-entity" mindar-image-target="targetIndex: 0">
-            <!--
-                *** این خط مهمترین تغییر است ***
-                برای اینکه ویدیو کاملاً هم اندازه قاب عکس شما باشد، باید نسبت ابعاد (طول به عرض) آن را اینجا تنظیم کنید.
-                یک خط کش بردارید و طول و عرض عکسی که به عنوان هدف استفاده کرده اید را اندازه بگیرید.
-                سپس ارتفاع را تقسیم بر عرض کنید.
-                مثال: اگر عکس شما 15 سانتی متر ارتفاع و 12 سانتی متر عرض دارد: 15 / 12 = 1.25
-                حالا عدد به دست آمده را در قسمت height="" قرار دهید.
-                width همیشه باید "1" باشد.
-            -->
-            <a-video id="ar-video-plane" src="#ar-video" width="1" height="1.25" rotation="0 0 0" position="0 0 0"></a-video>
+            <a-video id="ar-video-plane" src="#ar-video" width="1" height="1.5" rotation="0 0 0" position="0 0 0"></a-video>
         </a-entity>
     </a-scene>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Element selectors
             const startButton = document.querySelector("#start-button");
             const splashScreen = document.querySelector("#splash-screen");
             const sceneEl = document.querySelector("#ar-scene");
@@ -155,62 +199,85 @@
             const modalPlayer = document.querySelector("#modal-player");
 
             let isModalMode = false;
+            let modalVideo = null;
 
-            startButton.addEventListener('click', () => {
+            // Function to start the AR experience
+            const startExperience = () => {
                 splashScreen.classList.add('hidden');
                 sceneEl.classList.remove('hidden');
-                sceneEl.systems['mindar-image-system'].start();
+                
+                const mindarSystem = sceneEl.systems['mindar-image-system'];
+                if (mindarSystem) {
+                    mindarSystem.start();
+                }
+
+                arVideo.muted = true;
+                arVideo.play().catch(e => console.error("AR Video autoplay was prevented:", e));
+                arVideo.pause();
                 arVideo.muted = false;
-            });
+            };
+
+            startButton.addEventListener('click', startExperience);
 
             sceneEl.addEventListener("arReady", () => {
-                targetEntity.addEventListener("targetFound", () => {
-                    arVideo.play();
-                    if (!isModalMode) {
-                        uiContainer.classList.remove('hidden');
-                    }
-                });
-                targetEntity.addEventListener("targetLost", () => {
-                    arVideo.pause();
-                    if (!isModalMode) {
-                        uiContainer.classList.add('hidden');
-                    }
-                });
+                console.log("MindAR is ready");
+            });
+
+            targetEntity.addEventListener("targetFound", () => {
+                console.log("Target Found");
+                arVideo.play();
+                if (!isModalMode) {
+                    uiContainer.classList.remove('hidden');
+                }
+            });
+
+            targetEntity.addEventListener("targetLost", () => {
+                console.log("Target Lost");
+                arVideo.pause();
+                if (!isModalMode) {
+                    uiContainer.classList.add('hidden');
+                }
             });
 
             toggleViewButton.addEventListener('click', () => {
                 const currentTime = arVideo.currentTime;
                 
-                if (!isModalMode) {
+                isModalMode = !isModalMode;
+
+                if (isModalMode) {
+                    // Switch to Fullscreen (Modal) View
                     arVideo.pause();
                     modalPlayer.classList.remove('hidden');
                     
-                    const modalVideo = document.createElement('video');
+                    modalVideo = document.createElement('video');
                     modalVideo.src = arVideo.src;
                     modalVideo.currentTime = currentTime;
                     modalVideo.controls = true;
                     modalVideo.loop = true;
                     modalVideo.autoplay = true;
+                    modalVideo.playsInline = true;
+                    modalVideo.webkitPlaysInline = true;
                     
                     modalPlayer.innerHTML = '';
                     modalPlayer.appendChild(modalVideo);
                     
                     toggleViewButton.textContent = "پخش AR";
-                    isModalMode = true;
                 } else {
-                    const modalVideo = modalPlayer.querySelector('video');
+                    // Switch back to AR View
                     if (modalVideo) {
                         arVideo.currentTime = modalVideo.currentTime;
+                        modalVideo.pause();
                     }
+                    
                     modalPlayer.innerHTML = '';
                     modalPlayer.classList.add('hidden');
+                    modalVideo = null;
                     
                     if (targetEntity.getAttribute('mindar-image-target').visible) {
                         arVideo.play();
                     }
                     
                     toggleViewButton.textContent = "پخش تمام صفحه";
-                    isModalMode = false;
                 }
             });
         });
