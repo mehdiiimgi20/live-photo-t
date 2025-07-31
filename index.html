@@ -13,6 +13,7 @@
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             background-color: #222;
+            overflow: hidden; /* Prevent scrollbars */
         }
         /* Utility class to hide elements */
         .hidden {
@@ -25,31 +26,27 @@
             left: 0;
             width: 100%;
             height: 100%;
-            /* --- UPDATED to use your image from GitHub --- */
             background-image: url('https://zimahandmade.github.io/live-photo-f/zima.JPG');
             background-size: cover;
             background-position: center center;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 10004;
+            z-index: 10005; /* Highest z-index */
             text-align: center;
         }
         #start-container {
             max-width: 90%;
-            /* Removed background color to show the image fully */
             background-color: transparent;
             padding: 20px;
             border-radius: 15px;
-            /* --- ADDED MARGIN-TOP TO MOVE THE CONTAINER DOWN --- */
-            margin-top: 30vh; /* This pushes the container down by 30% of the viewport height */
+            margin-top: 30vh; /* Pushes the container down */
         }
-        /* --- UPDATED BUTTON STYLE --- */
+        /* Start button style */
         #start-button {
             padding: 12px 40px;
             font-size: 18px;
             font-weight: bold;
-            /* --- COLOR CHANGED AS REQUESTED --- */
             color: #002744;
             border: 2px solid #002744;
             background-color: transparent;
@@ -58,49 +55,99 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: transform 0.4s ease, box-shadow 0.4s ease, background-color 0.4s ease, color 0.4s ease;
             animation: glow-pulse 2.5s infinite;
-            /* Removed margin-top as the container is now centered */
         }
-        /* --- UPDATED HOVER EFFECT --- */
+        /* Start button hover effect */
         #start-button:hover {
-            /* --- COLOR CHANGED AS REQUESTED --- */
             background-color: #002744;
             color: white;
             transform: scale(1.15);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
         }
-        /* --- GLOW-PULSE ANIMATION --- */
+        /* Glow-pulse animation for the start button */
         @keyframes glow-pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 5px rgba(0, 39, 68, 0);
-            }
-            50% {
-                transform: scale(1.05);
-                /* --- GLOW COLOR CHANGED AS REQUESTED --- */
-                box-shadow: 0 0 20px rgba(0, 39, 68, 0.7);
-            }
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 5px rgba(0, 39, 68, 0);
-            }
+            0% { transform: scale(1); box-shadow: 0 0 5px rgba(0, 39, 68, 0); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 39, 68, 0.7); }
+            100% { transform: scale(1); box-shadow: 0 0 5px rgba(0, 39, 68, 0); }
         }
-        /* General UI container for buttons */
-        #ui-container {
+
+        /* --- NEW: Scanning UI Overlay --- */
+        #scanning-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 10003;
-            pointer-events: none;
+            z-index: 10001; /* Below modal, above AR scene */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none; /* Allow clicks to pass through */
         }
-        /* Button to toggle between AR and fullscreen video */
-        #toggle-view-button {
-            pointer-events: auto;
-            position: absolute;
+        .scan-top-bar {
+            width: 100%;
+            padding-top: 20px;
+            text-align: center;
+        }
+        .scan-instruction {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 16px;
+            display: inline-block;
+        }
+        .scan-guide-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        .scan-guide {
+            width: 60vw;
+            max-width: 250px;
+            height: 90vw;
+            max-height: 375px;
+            border: 3px solid #f9a825; /* Yellow/Orange border */
+            border-radius: 30px;
+            box-shadow: 0 0 20px rgba(249, 168, 37, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .scan-guide svg {
+            width: 60px;
+            height: 60px;
+            fill: white;
+            opacity: 0.8;
+        }
+        .scan-bottom-bar {
+            width: 100%;
+            padding-bottom: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        .scan-button {
+            width: 70px;
+            height: 70px;
+            background-color: #e91e63; /* Pink/Red color */
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 0 15px rgba(233, 30, 99, 0.7);
+        }
+
+        /* General UI container for the toggle button */
+        #ui-container {
+            position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
+            z-index: 10003;
+            pointer-events: none;
+        }
+        #toggle-view-button {
+            pointer-events: auto;
             padding: 12px 20px;
             font-size: 16px;
             font-weight: bold;
@@ -150,21 +197,39 @@
     <!-- Splash screen shown on page load -->
     <div id="splash-screen">
         <div id="start-container">
-            <!-- The instruction text has been removed -->
             <button id="start-button">بزن بریم</button>
         </div>
     </div>
     
+    <!-- NEW: Scanning UI Overlay -->
+    <div id="scanning-overlay" class="hidden">
+        <div class="scan-top-bar">
+            <span class="scan-instruction">دوربین را به سمت عکس بگیرید</span>
+        </div>
+        <div class="scan-guide-container">
+            <div class="scan-guide">
+                <!-- SVG for QR-like icon -->
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 15h20v20h-20z M20 20v10h10v-10z M65 15h20v20h-20z M70 20v10h10v-10z M15 65h20v20h-20z M20 70v10h10v-10z M45 45h10v10h-10z M35 35h10v10h-10z M55 35h10v10h-10z M35 55h10v10h-10z M55 55h10v10h-10z M45 65h10v10h-10z M65 45h10v10h-10z M45 25h10v10h-10z M25 45h10v10h-10z M65 65h20v10h-20z M65 80h10v5h-10z M80 65h5v10h-5z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="scan-bottom-bar">
+            <div class="scan-button"></div>
+        </div>
+    </div>
+
     <!-- Container for UI elements like buttons -->
     <div id="ui-container" class="hidden">
         <button id="toggle-view-button">پخش تمام صفحه</button>
     </div>
     
     <!-- Modal for playing the video in fullscreen -->
-    <div id="modal-player" class="hidden"></div>
+    <div id="modal-player" class="hidden">
+        <video id="modal-video" src="https://zimahandmade.github.io/live-photo-f/video.mp4" loop playsinline webkit-playsinline controls crossorigin="anonymous"></video>
+    </div>
     
     <!-- A-Frame Scene for AR -->
-    <!-- --- UPDATED to use your .mind file from GitHub --- -->
     <a-scene 
         id="ar-scene" 
         class="hidden" 
@@ -175,7 +240,6 @@
         renderer="logarithmicDepthBuffer: true;">
 
         <a-assets>
-            <!-- --- UPDATED to use your video file from GitHub --- -->
             <video id="ar-video" src="https://zimahandmade.github.io/live-photo-f/video.mp4" loop playsinline webkit-playsinline crossorigin="anonymous"></video>
         </a-assets>
 
@@ -188,7 +252,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Element selectors
+            // --- Element selectors ---
             const startButton = document.querySelector("#start-button");
             const splashScreen = document.querySelector("#splash-screen");
             const sceneEl = document.querySelector("#ar-scene");
@@ -197,14 +261,18 @@
             const uiContainer = document.querySelector("#ui-container");
             const toggleViewButton = document.querySelector("#toggle-view-button");
             const modalPlayer = document.querySelector("#modal-player");
+            const modalVideo = document.querySelector("#modal-video");
+            const scanningOverlay = document.querySelector("#scanning-overlay"); // NEW
 
+            // --- State variables ---
             let isModalMode = false;
-            let modalVideo = null;
+            let isTargetVisible = false;
 
-            // Function to start the AR experience
+            // --- Function to start the AR experience ---
             const startExperience = () => {
                 splashScreen.classList.add('hidden');
                 sceneEl.classList.remove('hidden');
+                scanningOverlay.classList.remove('hidden'); // Show scanning UI
                 
                 const mindarSystem = sceneEl.systems['mindar-image-system'];
                 if (mindarSystem) {
@@ -219,62 +287,54 @@
 
             startButton.addEventListener('click', startExperience);
 
+            // --- MindAR Event Listeners ---
             sceneEl.addEventListener("arReady", () => {
                 console.log("MindAR is ready");
             });
 
             targetEntity.addEventListener("targetFound", () => {
                 console.log("Target Found");
+                isTargetVisible = true;
+                scanningOverlay.classList.add('hidden'); // Hide scanning UI
+                uiContainer.classList.remove('hidden');
                 arVideo.play();
-                if (!isModalMode) {
-                    uiContainer.classList.remove('hidden');
-                }
             });
 
             targetEntity.addEventListener("targetLost", () => {
                 console.log("Target Lost");
+                isTargetVisible = false;
                 arVideo.pause();
                 if (!isModalMode) {
                     uiContainer.classList.add('hidden');
+                    scanningOverlay.classList.remove('hidden'); // Show scanning UI again
                 }
             });
 
+            // --- Toggle View Button Logic ---
             toggleViewButton.addEventListener('click', () => {
-                const currentTime = arVideo.currentTime;
-                
                 isModalMode = !isModalMode;
 
                 if (isModalMode) {
-                    // Switch to Fullscreen (Modal) View
+                    // --- Switch to Fullscreen (Modal) View ---
                     arVideo.pause();
+                    modalVideo.currentTime = arVideo.currentTime;
                     modalPlayer.classList.remove('hidden');
-                    
-                    modalVideo = document.createElement('video');
-                    modalVideo.src = arVideo.src;
-                    modalVideo.currentTime = currentTime;
-                    modalVideo.controls = true;
-                    modalVideo.loop = true;
-                    modalVideo.autoplay = true;
-                    modalVideo.playsInline = true;
-                    modalVideo.webkitPlaysInline = true;
-                    
-                    modalPlayer.innerHTML = '';
-                    modalPlayer.appendChild(modalVideo);
-                    
+                    sceneEl.classList.add('hidden');
+                    modalVideo.play();
                     toggleViewButton.textContent = "پخش AR";
                 } else {
-                    // Switch back to AR View
-                    if (modalVideo) {
-                        arVideo.currentTime = modalVideo.currentTime;
-                        modalVideo.pause();
-                    }
-                    
-                    modalPlayer.innerHTML = '';
+                    // --- Switch back to AR View ---
+                    modalVideo.pause();
+                    arVideo.currentTime = modalVideo.currentTime;
                     modalPlayer.classList.add('hidden');
-                    modalVideo = null;
+                    sceneEl.classList.remove('hidden');
                     
-                    if (targetEntity.getAttribute('mindar-image-target').visible) {
+                    if (isTargetVisible) {
                         arVideo.play();
+                    } else {
+                        // If target is not visible, show the scanning UI
+                        scanningOverlay.classList.remove('hidden');
+                        uiContainer.classList.add('hidden');
                     }
                     
                     toggleViewButton.textContent = "پخش تمام صفحه";
